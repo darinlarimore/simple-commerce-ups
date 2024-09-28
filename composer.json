@@ -1,0 +1,42 @@
+{
+    "name": "darinlarimore/simple-commerce-ups",
+    "autoload": {
+        "psr-4": {
+            "Darinlarimore\\SimpleCommerceUps\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Darinlarimore\\SimpleCommerceUps\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "statamic/cms": "^5.0",
+        "dvdoug/boxpacker": "^4.0",
+        "duncanmcclean/simple-commerce": "^7.5"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.5",
+        "pestphp/pest": "^3.2",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "statamic": {
+            "name": "Simple Commerce UPS",
+            "description": "Simple Commerce UPS addon"
+        },
+        "laravel": {
+            "providers": [
+                "Darinlarimore\\SimpleCommerceUps\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

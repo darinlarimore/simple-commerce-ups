@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Darinlarimore\\SimpleCommerceUps\\Tests\\UPSTest::test_fetch_shipping_rates":8},"times":{"Darinlarimore\\SimpleCommerceUps\\Tests\\ExampleTest::test_that_true_is_true":0.007,"Darinlarimore\\SimpleCommerceUps\\Tests\\UPSTest::test_fetch_shipping_rates":0.011}}
