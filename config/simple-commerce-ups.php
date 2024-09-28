@@ -15,4 +15,7 @@ return [
     'shipFromStateCode' => env('UPS_SHIP_FROM_STATE_CODE'), // Example: IN
 
     'pickupType' => env('UPS_PICKUP_TYPE'), // Daily Pickup, Customer Counter, One Time Pickup, On Call Air, Letter Center, Air Service Center
+
+    'unitOfMeasurement' => env('UPS_UNIT_OF_MEASUREMENT'), // IN or CM
+    'weightUnitOfMeasurement' => env('UPS_WEIGHT_UNIT_OF_MEASUREMENT'), // LBS or KGS
 ];

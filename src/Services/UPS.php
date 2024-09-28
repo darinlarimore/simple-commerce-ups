@@ -87,7 +87,7 @@ class UPS
                     ],
                     'Dimensions' => [
                         'UnitOfMeasurement' => [
-                            'Code' => "IN",
+                            'Code' => config('simple-commerce-ups.unitOfMeasurement') ?? 'IN',
                         ],
                         'Length' => (string) $box->box->getOuterLength(),
                         'Width' => (string) $box->box->getOuterWidth(),
@@ -95,7 +95,7 @@ class UPS
                     ],
                     'PackageWeight' => [
                         'UnitOfMeasurement' => [
-                            'Code' => "LBS",
+                            'Code' => config('simple-commerce-ups.weightUnitOfMeasurement') ?? 'LBS',
                         ],
                         'Weight' => (string) $box->getWeight(),
                     ],
@@ -112,7 +112,7 @@ class UPS
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
 
-        return $response->TotalCharges->MonetaryValue;
+        return $response->TotalCharges->MonetaryValue * 100;
     }
 
     public function cacheKey($order)
