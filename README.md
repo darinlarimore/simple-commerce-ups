@@ -36,10 +36,9 @@ In order to use the UPS api, you'll need to do the following:
 6. Copy the Account Number from UPS and paste in the `accountNumber` field in the config.
 
 ### Add Fields to your Products
-In order for the packing algorhythm to work you must add fields for weight, height, width, and depth to your products. They must have the following handles and types:
-
-<!-- image -->
 <img src="fig1.png"  width="768">
+
+In order for the packing algorhythm to work you must add fields for weight, height, width, and depth to your products. They must have the following handles and types:
 
 | Field Name | Field Type * | Field Handle * |
 | ---------- | ---------- | ------------ |
