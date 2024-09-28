@@ -26,7 +26,7 @@ class DummyClass extends BaseShippingMethod implements ShippingMethod
 				$ups = new UPS();
 				$rate = $ups->fetchShippingRates($order, 'UPS Ground'); // Choose from: UPS Next Day Air, UPS 2nd Day Air, UPS Ground, UPS Worldwide Express, UPS Worldwide Expedited, UPS Standard, UPS 3 Day Select, UPS Next Day Air Saver, UPS Next Day Air Early A.M., UPS Worldwide Express Plus, UPS 2nd Day Air A.M., UPS Saver, UPS Today Standard, UPS Today Dedicated Courier, UPS Today Intercity, UPS Today Express, UPS Today Express Saver
 
-				return $rate * 100;
+				return $rate;
 		}
 
 		public function checkAvailability(Order $order, Address $address): bool
