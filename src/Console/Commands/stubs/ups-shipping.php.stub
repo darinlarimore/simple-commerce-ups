@@ -1,0 +1,36 @@
+<?php
+
+namespace DummyNamespace;
+
+use DuncanMcClean\SimpleCommerce\Contracts\Order;
+use DuncanMcClean\SimpleCommerce\Contracts\ShippingMethod;
+use DuncanMcClean\SimpleCommerce\Orders\Address;
+use DuncanMcClean\SimpleCommerce\Shipping\BaseShippingMethod;
+
+use Darinlarimore\SimpleCommerceUps\Services\UPS;
+
+class DummyClass extends BaseShippingMethod implements ShippingMethod
+{
+		public function name(): string
+		{
+				return __('UPS Ground');
+		}
+
+		public function description(): string
+		{
+				return __('UPS Ground shipping method');
+		}
+
+		public function calculateCost(Order $order): int
+		{
+				$ups = new UPS();
+				$rate = $ups->fetchShippingRates($order, 'UPS Ground'); // Choose from: UPS Next Day Air, UPS 2nd Day Air, UPS Ground, UPS Worldwide Express, UPS Worldwide Expedited, UPS Standard, UPS 3 Day Select, UPS Next Day Air Saver, UPS Next Day Air Early A.M., UPS Worldwide Express Plus, UPS 2nd Day Air A.M., UPS Saver, UPS Today Standard, UPS Today Dedicated Courier, UPS Today Intercity, UPS Today Express, UPS Today Express Saver
+
+				return $rate * 100;
+		}
+
+		public function checkAvailability(Order $order, Address $address): bool
+		{
+				return true;
+		}
+}

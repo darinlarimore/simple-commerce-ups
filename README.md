@@ -1,6 +1,8 @@
 # <img src="src/icon.svg" height="20" width="20"> Simple Commerce Ups
 
-> Simple Commerce Ups is a Statamic addon that calculates shipping costs based on
+> Simple Commerce Ups is a Statamic addon that calculates shipping costs from the UPS API.
+
+<img src="fig2.png"  width="768">
 
 ## Features
 
@@ -14,6 +16,12 @@ You can search for this addon in the `Tools > Addons` section of the Statamic co
 
 ``` bash
 composer require darinlarimore/simple-commerce-ups
+```
+
+Then, you'll need to publish the config file:
+
+``` bash
+php please vendor:publish --tag=simple-commerce-ups-config
 ```
 
 ## How to Use
@@ -46,45 +54,5 @@ In order for the packing algorhythm to work you must add fields for weight, heig
 
 ### Add Shipping Method(s)
 For each shipping service you want to use (eg. UPS Ground or UPS 2nd Day Air), you'll need to create a new shipping method in Simple Commerce. To do this,
-run `php artisan make:shipping-method UPS-Ground` which will create a new shipping method in `/app/ShippingMethods/UPSGround.php`.
+run `php please make:ups-shipping-method UPS-Ground` which will create a new shipping method in `/app/ShippingMethods/UPSGround.php`.
 
-Then inisde the `/app/ShippingMethods/UPSGround.php` file, add the following code:
-
-```php
-<?php
-
-namespace App\ShippingMethods;
-
-use DuncanMcClean\SimpleCommerce\Contracts\Order;
-use DuncanMcClean\SimpleCommerce\Contracts\ShippingMethod;
-use DuncanMcClean\SimpleCommerce\Orders\Address;
-use DuncanMcClean\SimpleCommerce\Shipping\BaseShippingMethod;
-
-use Darinlarimore\SimpleCommerceUps\Services\UPS;
-
-class UPSGround extends BaseShippingMethod implements ShippingMethod
-{
-		public function name(): string
-		{
-				return __('UPS Ground');
-		}
-
-		public function description(): string
-		{
-				return __('UPS Ground shipping method');
-		}
-
-		public function calculateCost(Order $order): int
-		{
-				$ups = new UPS();
-				$rate = $ups->fetchShippingRates($order, 'UPS Ground'); // Pass fetchShippingRates the Order and a service name, in this case 'UPS Ground'.
-
-				return $rate;
-		}
-
-		public function checkAvailability(Order $order, Address $address): bool
-		{
-				return true;
-		}
-}
-```
