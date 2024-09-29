@@ -10,109 +10,111 @@ use Statamic\Facades\Blink;
 
 class UPS
 {
-
     public function fetchShippingRates($order, $service)
     {
-        if (Blink::store('simple-commerce-ups')->has($this->cacheKey($order))) {
-            $response = Blink::store('simple-commerce-ups')->get($this->cacheKey($order));
-        } else {
-            // if no items in the cart, return null
-            if ($order->lineItems->count() == 0) {
-                return null;
-            }
-
-            $client = $this->getClient();
-
-            if (!$client) {
-                return null;
-            }
-
-            $payload = [
-                'RateRequest' => [
-                    'PickupType' => [
-                        'Code' => $this->pickupCodes[config('simple-commerce-ups.pickupType')],
-                    ],
-                    'Shipment' => [
-                        'Shipper' => [
-                            'Address' => [
-                                'City' => (string) config('simple-commerce-ups.shipFromCity'),
-                                'StateProvinceCode' => (string) config('simple-commerce-ups.shipFromStateCode'),
-                                'PostalCode' => (string) config('simple-commerce-ups.shipFromPostalCode'),
-                                'CountryCode' => (string) config('simple-commerce-ups.shipFromCountryCode'),
-                            ],
-                        ],
-                        'ShipFrom' => [
-                            'Address' => [
-                                'City' => (string) config('simple-commerce-ups.shipFromCity'),
-                                'StateProvinceCode' => (string) config('simple-commerce-ups.shipFromStateCode'),
-                                'PostalCode' => (string) config('simple-commerce-ups.shipFromPostalCode'),
-                                'CountryCode' => (string) config('simple-commerce-ups.shipFromCountryCode'),
-                            ],
-                        ],
-                        'ShipTo' => [
-                            'Address' => [
-                                'City' => (string) $order->shippingAddress()->city(),
-                                'StateProvinceCode' => (string) $order->shippingAddress()->region()['name'],
-                                'PostalCode' => (string) $order->shippingAddress()->zipCode(),
-                                'CountryCode' => (string) $order->shippingAddress()->country()['iso'],
-                            ],
-                        ],
-                    ],
-                ],
-            ];
-
-            if (config('simple-commerce-ups.accountNumber')) {
-                $payload['RateRequest']['Shipment']['Shipper']['ShipperNumber'] = config('simple-commerce-ups.accountNumber');
-
-                $payload['RateRequest']['Shipment']['ShipmentRatingOptions'] = [
-                    'NegotiatedRatesIndicator' => 'Y',
-                ];
-
-                $payload['RateRequest']['Shipment']['PaymentDetails'] = [
-                    'ShipmentCharge' => [
-                        'Type' => '01',
-                        'BillShipper' => [
-                            'AccountNumber' => config('simple-commerce-ups.accountNumber'),
-                        ],
-                    ],
-                ];
-            }
-
-            $boxes = $this->packOrder($order);
-
-            foreach ($boxes as $box) {
-                $payload['RateRequest']['Shipment']['Package'][] = [
-                    'PackagingType' => [
-                        'Code' => '02',
-                    ],
-                    'Dimensions' => [
-                        'UnitOfMeasurement' => [
-                            'Code' => config('simple-commerce-ups.unitOfMeasurement') ?? 'IN',
-                        ],
-                        'Length' => (string) $box->box->getOuterLength(),
-                        'Width' => (string) $box->box->getOuterWidth(),
-                        'Height' => (string) $box->box->getOuterDepth(),
-                    ],
-                    'PackageWeight' => [
-                        'UnitOfMeasurement' => [
-                            'Code' => config('simple-commerce-ups.weightUnitOfMeasurement') ?? 'LBS',
-                        ],
-                        'Weight' => (string) $box->getWeight(),
-                    ],
-                ];
-            }
-            $response = $this->request('POST', 'api/rating/v1/Shop', [
-                'json' => $payload,
-            ]);
-            Blink::store('simple-commerce-ups')->put($this->cacheKey($order), $response);
+        // if no items in the cart, return null
+        if ($order->lineItems->count() == 0) {
+            return null;
         }
 
-        // get the rate for the shipping service requested
+        if (Blink::has($this->cacheKey($order))) {
+            $payload = Blink::get($this->cacheKey($order));
+        } else {
+            $payload = $this->generatePayload($order);
+            Blink::put($this->cacheKey($order), $payload);
+        }
+
+        $response = $this->request('POST', 'api/rating/v1/Shop', [
+            'json' => $payload,
+        ]);
+
+        // Get the rate for the shipping service requested
         $response = collect($response->RateResponse->RatedShipment)->first(function ($rate) use ($service) {
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
 
+
         return $response->TotalCharges->MonetaryValue * 100;
+    }
+
+    public function generatePayload($order)
+    {
+        $payload = [
+            'RateRequest' => [
+                'PickupType' => [
+                    'Code' => $this->pickupCodes[config('simple-commerce-ups.pickupType')],
+                ],
+                'Shipment' => [
+                    'Shipper' => [
+                        'Address' => [
+                            'City' => (string) config('simple-commerce-ups.shipFromCity'),
+                            'StateProvinceCode' => (string) config('simple-commerce-ups.shipFromStateCode'),
+                            'PostalCode' => (string) config('simple-commerce-ups.shipFromPostalCode'),
+                            'CountryCode' => (string) config('simple-commerce-ups.shipFromCountryCode'),
+                        ],
+                    ],
+                    'ShipFrom' => [
+                        'Address' => [
+                            'City' => (string) config('simple-commerce-ups.shipFromCity'),
+                            'StateProvinceCode' => (string) config('simple-commerce-ups.shipFromStateCode'),
+                            'PostalCode' => (string) config('simple-commerce-ups.shipFromPostalCode'),
+                            'CountryCode' => (string) config('simple-commerce-ups.shipFromCountryCode'),
+                        ],
+                    ],
+                    'ShipTo' => [
+                        'Address' => [
+                            'City' => (string) $order->shippingAddress()->city(),
+                            'StateProvinceCode' => (string) $order->shippingAddress()->region()['name'],
+                            'PostalCode' => (string) $order->shippingAddress()->zipCode(),
+                            'CountryCode' => (string) $order->shippingAddress()->country()['iso'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        if (config('simple-commerce-ups.accountNumber')) {
+            $payload['RateRequest']['Shipment']['Shipper']['ShipperNumber'] = config('simple-commerce-ups.accountNumber');
+
+            $payload['RateRequest']['Shipment']['ShipmentRatingOptions'] = [
+                'NegotiatedRatesIndicator' => 'Y',
+            ];
+
+            $payload['RateRequest']['Shipment']['PaymentDetails'] = [
+                'ShipmentCharge' => [
+                    'Type' => '01',
+                    'BillShipper' => [
+                        'AccountNumber' => config('simple-commerce-ups.accountNumber'),
+                    ],
+                ],
+            ];
+        }
+
+        $boxes = $this->packOrder($order);
+
+        foreach ($boxes as $box) {
+            $payload['RateRequest']['Shipment']['Package'][] = [
+                'PackagingType' => [
+                    'Code' => '02',
+                ],
+                'Dimensions' => [
+                    'UnitOfMeasurement' => [
+                        'Code' => config('simple-commerce-ups.unitOfMeasurement') ?? 'IN',
+                    ],
+                    'Length' => (string) $box->box->getOuterLength(),
+                    'Width' => (string) $box->box->getOuterWidth(),
+                    'Height' => (string) $box->box->getOuterDepth(),
+                ],
+                'PackageWeight' => [
+                    'UnitOfMeasurement' => [
+                        'Code' => config('simple-commerce-ups.weightUnitOfMeasurement') ?? 'LBS',
+                    ],
+                    'Weight' => (string) $box->getWeight(),
+                ],
+            ];
+        }
+
+        return $payload;
     }
 
     public function cacheKey($order)
@@ -142,7 +144,7 @@ class UPS
             'form_params' => [
                 'grant_type' => 'client_credentials',
             ],
-        ]);
+        ]) ;
         $authResponse = json_decode($authResponse->post('security/v1/oauth/token')->getBody()->getContents());
 
         return new Client([
@@ -156,7 +158,7 @@ class UPS
 
     public function request(string $method, string $uri, array $options = [])
     {
-        $response = $this->getClient()->request($method, ltrim($uri, '/'), $options);
+        $response = $this->getClient()->request($method, ltrim($uri, '/'), $options);;
 
         return json_decode($response->getBody());
     }
