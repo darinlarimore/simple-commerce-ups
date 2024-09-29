@@ -12,9 +12,9 @@ class UPS
 {
     public function fetchShippingRates($order, $service)
     {
-        // if no items in the cart, return null
+        // if no items in the cart, return false
         if ($order->lineItems->count() == 0) {
-            return null;
+            return false;
         }
 
         if (Blink::has($this->cacheKey($order))) {
