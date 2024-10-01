@@ -28,7 +28,6 @@ class UPS
         if (Blink::has($this->cacheKey($order))) {
             $response = Blink::get($this->cacheKey($order));
         } else {
-
             $payload = $this->generatePayload($order);
 
             if (!$payload) {
@@ -37,21 +36,21 @@ class UPS
 
             $response = $this->request('POST', 'api/rating/v1/Shop', [
                 'json' => $payload,
-            ]);
+            ])->RateResponse->RatedShipment;
 
             Blink::put($this->cacheKey($order), $response);
         }
 
         if ($response === null) {
-            Blink::forget($this->cacheKey($order));
             return false;
         }
 
         // Get the rate for the shipping service requested
-        $response = collect($response->RateResponse->RatedShipment)->first(function ($rate) use ($service) {
+        $shippingRates = collect($response)->first(function ($rate) use ($service) {
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
-        return $response->TotalCharges->MonetaryValue * 100;
+
+        return $shippingRates->TotalCharges->MonetaryValue * 100;
     }
 
     public function generatePayload($order)
