@@ -12,7 +12,6 @@ class UPS
 {
     public function checkAvailability($order, $service)
     {
-
         if ($this->fetchShippingRates($order,  $service) === false) {
             return false;
         }
@@ -21,7 +20,6 @@ class UPS
 
     public function fetchShippingRates($order, $service)
     {
-
         // if no items in the cart, return false
         if ($order->lineItems->count() == 0) {
             return false;
@@ -30,7 +28,6 @@ class UPS
         if (Blink::has($this->cacheKey($order))) {
             $response = Blink::get($this->cacheKey($order));
         } else {
-
 
             $payload = $this->generatePayload($order);
 
@@ -42,16 +39,15 @@ class UPS
                 'json' => $payload,
             ]);
 
-
-            // Get the rate for the shipping service requested
-
             Blink::put($this->cacheKey($order), $response);
         }
 
         if ($response === null) {
+            Blink::forget($this->cacheKey($order));
             return false;
         }
 
+        // Get the rate for the shipping service requested
         $response = collect($response->RateResponse->RatedShipment)->first(function ($rate) use ($service) {
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
