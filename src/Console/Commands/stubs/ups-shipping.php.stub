@@ -31,6 +31,7 @@ class DummyClass extends BaseShippingMethod implements ShippingMethod
 
 		public function checkAvailability(Order $order, Address $address): bool
 		{
-				return true;
+				$ups = new UPS();
+				return $ups->checkAvailability($order, 'UPS Ground');
 		}
 }

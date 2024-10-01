@@ -10,30 +10,51 @@ use Statamic\Facades\Blink;
 
 class UPS
 {
+    public function checkAvailability($order, $service)
+    {
+
+        if ($this->fetchShippingRates($order,  $service) === false) {
+            return false;
+        }
+        return true;
+    }
+
     public function fetchShippingRates($order, $service)
     {
+
         // if no items in the cart, return false
         if ($order->lineItems->count() == 0) {
             return false;
         }
 
         if (Blink::has($this->cacheKey($order))) {
-            $payload = Blink::get($this->cacheKey($order));
+            $response = Blink::get($this->cacheKey($order));
         } else {
+
+
             $payload = $this->generatePayload($order);
-            Blink::put($this->cacheKey($order), $payload);
+
+            if (!$payload) {
+                return false;
+            }
+
+            $response = $this->request('POST', 'api/rating/v1/Shop', [
+                'json' => $payload,
+            ]);
+
+
+            // Get the rate for the shipping service requested
+
+            Blink::put($this->cacheKey($order), $response);
         }
 
-        $response = $this->request('POST', 'api/rating/v1/Shop', [
-            'json' => $payload,
-        ]);
+        if ($response === null) {
+            return false;
+        }
 
-        // Get the rate for the shipping service requested
         $response = collect($response->RateResponse->RatedShipment)->first(function ($rate) use ($service) {
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
-
-
         return $response->TotalCharges->MonetaryValue * 100;
     }
 
@@ -91,6 +112,10 @@ class UPS
         }
 
         $boxes = $this->packOrder($order);
+
+        if ($boxes->count() == 0) {
+            return false;
+        }
 
         foreach ($boxes as $box) {
             $payload['RateRequest']['Shipment']['Package'][] = [
@@ -287,6 +312,14 @@ class UPS
         $order->lineItems->map(function ($item) use ($packer) {
             $lineItemData = $item->product->data;
             for ($i = 0; $i < $item->quantity; $i++) {
+                if ($lineItemData->get('weight') == null && $lineItemData->get('width') == null && $lineItemData->get('height') == null && $lineItemData->get('depth') == null) {
+                    continue;
+                }
+
+                if ($lineItemData->get('product_type')  == 'digital') {
+                    continue;
+                }
+
                 $packer->addItem(new ShipItem(
                     description: $item->product->id,
                     width: (int) $lineItemData->get('width'),
