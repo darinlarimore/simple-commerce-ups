@@ -12,6 +12,4 @@ class GeneratorCommand extends StatamicGeneratorCommand{
 
         return __DIR__.'/stubs/'.$stub;
     }
-
-    protected $name = "ups-shipping";
 }
