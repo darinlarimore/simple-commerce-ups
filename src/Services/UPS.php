@@ -139,7 +139,7 @@ class UPS
 
     public function cacheKey($order)
     {
-        return $order->id() . md5($order->shippingAddress()) . md5($order->lineItems());
+        return $order->id() . md5($order->shippingAddress()) . md5($order->lineItems()->pull('product'));
     }
 
     public function getClient()
