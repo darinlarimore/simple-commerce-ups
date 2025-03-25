@@ -7,6 +7,7 @@ use Darinlarimore\SimpleCommerceUps\Services\ShipItem;
 use Darinlarimore\SimpleCommerceUps\Services\ShipBox;
 use DVDoug\BoxPacker\Rotation;
 use Statamic\Facades\Blink;
+use Illuminate\Validation\ValidationException;
 
 class UPS
 {
@@ -29,6 +30,8 @@ class UPS
             $response = Blink::get($this->cacheKey($order));
         } else {
             $payload = $this->generatePayload($order);
+
+            ray($payload)->showApp();
 
             if (!$payload) {
                 return false;
@@ -116,24 +119,41 @@ class UPS
             return false;
         }
 
+
         foreach ($boxes as $box) {
+            if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
+                $dimensionsUnit = "CM";
+                $weightUnit = "KG";
+                $length = round($box->box->getOuterLength() / 10, 1);
+                $width = round($box->box->getOuterWidth() / 10, 1);
+                $height = round($box->box->getOuterDepth() / 10, 1);
+                $weight = round(max(1, $box->getWeight() / 1000), 1); // UPS requires a minimum weight of 1kg
+            } else {
+                $dimensionsUnit = "IN";
+                $weightUnit = "LBS";
+                $length = round($box->box->getOuterLength() / 25.4, 1);
+                $width = round($box->box->getOuterWidth() / 25.4, 1);
+                $height = round($box->box->getOuterDepth() / 25.4, 1);
+                $weight = round(max(1, $box->getWeight() / 453.59237), 1); // UPS requires a minimum weight of 1lb
+            }
+
             $payload['RateRequest']['Shipment']['Package'][] = [
                 'PackagingType' => [
                     'Code' => '02',
                 ],
                 'Dimensions' => [
                     'UnitOfMeasurement' => [
-                        'Code' => config('simple-commerce-ups.unitOfMeasurement') ?? 'IN',
+                        'Code' => $dimensionsUnit,
                     ],
-                    'Length' => (string) $box->box->getOuterLength(),
-                    'Width' => (string) $box->box->getOuterWidth(),
-                    'Height' => (string) $box->box->getOuterDepth(),
+                    'Length' => (string) $length,
+                    'Width' => (string) $width,
+                    'Height' => (string) $height,
                 ],
                 'PackageWeight' => [
                     'UnitOfMeasurement' => [
-                        'Code' => config('simple-commerce-ups.weightUnitOfMeasurement') ?? 'LBS',
+                        'Code' => $weightUnit,
                     ],
-                    'Weight' => (string) $box->getWeight(),
+                    'Weight' => (string) $weight,
                 ],
             ];
         }
@@ -182,7 +202,13 @@ class UPS
 
     public function request(string $method, string $uri, array $options = [])
     {
-        $response = $this->getClient()->request($method, ltrim($uri, '/'), $options);;
+        try {
+            $response = $this->getClient()->request($method, ltrim($uri, '/'), $options);
+        } catch (\Exception $e) {
+            $errorResponse = json_decode($e->getResponse()->getBody()->getContents(), true);
+            $errorMessage = $errorResponse['response']['errors'][0]['message'] ?? $e->getMessage();
+            throw ValidationException::withMessages([$errorMessage]);
+        }
 
         return json_decode($response->getBody());
     }
@@ -191,71 +217,71 @@ class UPS
         [
             'id' => 'ups-1',
             'name' => 'UPS Letter',
-            'boxLength' => 12.5,
-            'boxWidth' => 9.5,
-            'boxHeight' => 0.25,
+            'boxLength' => 318,
+            'boxWidth' => 241,
+            'boxHeight' => 6,
             'boxWeight' => 0,
-            'maxWeight' => 0.5,
+            'maxWeight' => 227,
             'enabled' => true,
         ],
         [
             'id' => 'ups-2',
             'name' => 'Tube',
-            'boxLength' => 38,
-            'boxWidth' => 6,
-            'boxHeight' => 6,
+            'boxLength' => 965,
+            'boxWidth' => 152,
+            'boxHeight' => 152,
             'boxWeight' => 0,
-            'maxWeight' => 100,
+            'maxWeight' => 45359,
             'enabled' => true,
         ],
         [
             'id' => 'ups-3',
             'name' => '10KG Box',
-            'boxLength' => 16.5,
-            'boxWidth' => 13.25,
-            'boxHeight' => 10.75,
+            'boxLength' => 419,
+            'boxWidth' => 337,
+            'boxHeight' => 273,
             'boxWeight' => 0,
-            'maxWeight' => 22,
+            'maxWeight' => 9979,
             'enabled' => true,
         ],
         [
             'id' => 'ups-4',
             'name' => '25KG Box',
-            'boxLength' => 19.75,
-            'boxWidth' => 17.75,
-            'boxHeight' => 13.2,
+            'boxLength' => 502,
+            'boxWidth' => 451,
+            'boxHeight' => 335,
             'boxWeight' => 0,
-            'maxWeight' => 55,
+            'maxWeight' => 24948,
             'enabled' => true,
         ],
         [
             'id' => 'ups-5',
             'name' => 'Small Express Box',
-            'boxLength' => 13,
-            'boxWidth' => 11,
-            'boxHeight' => 2,
+            'boxLength' => 330,
+            'boxWidth' => 279,
+            'boxHeight' => 51,
             'boxWeight' => 0,
-            'maxWeight' => 100,
+            'maxWeight' => 45359,
             'enabled' => true,
         ],
         [
             'id' => 'ups-6',
             'name' => 'Medium Express Box',
-            'boxLength' => 16,
-            'boxWidth' => 11,
-            'boxHeight' => 3,
+            'boxLength' => 406,
+            'boxWidth' => 279,
+            'boxHeight' => 76,
             'boxWeight' => 0,
-            'maxWeight' => 100,
+            'maxWeight' => 45359,
             'enabled' => true,
         ],
         [
             'id' => 'ups-7',
             'name' => 'Large Express Box',
-            'boxLength' => 18,
-            'boxWidth' => 13,
-            'boxHeight' => 3,
+            'boxLength' => 457,
+            'boxWidth' => 330,
+            'boxHeight' => 76,
             'boxWeight' => 0,
-            'maxWeight' => 30,
+            'maxWeight' => 13608,
             'enabled' => true,
         ],
     ];
@@ -297,14 +323,14 @@ class UPS
         collect($this->boxSizes)->map(function ($box) use ($packer) {
             $packer->addBox(new ShipBox(
                 reference: $box['name'],
-                outerWidth: (int) $box['boxWidth'],
-                outerLength: (int) $box['boxLength'],
-                outerDepth: (int) $box['boxHeight'],
+                outerWidth: $box['boxWidth'],
+                outerLength: $box['boxLength'],
+                outerDepth: $box['boxHeight'],
                 emptyWeight: 0,
-                innerWidth: (int) $box['boxWidth'],
-                innerLength: (int) $box['boxLength'],
-                innerDepth: (int) $box['boxHeight'],
-                maxWeight: (int) $box['maxWeight'],
+                innerWidth: $box['boxWidth'],
+                innerLength: $box['boxLength'],
+                innerDepth: $box['boxHeight'],
+                maxWeight: $box['maxWeight'],
             ));
         });
 
@@ -320,14 +346,25 @@ class UPS
                     continue;
                 }
 
-                $packer->addItem(new ShipItem(
-                    description: $item->product,
-                    width: (int) $lineItemData->get('width'),
-                    length: (int) $lineItemData->get('height'),
-                    depth: (int) $lineItemData->get('depth'),
-                    weight: (int) $lineItemData->get('weight'),
-                    allowedRotation: Rotation::BestFit,
-                ));
+                if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
+                    $packer->addItem(new ShipItem(
+                        description: $item->product,
+                        width: (int) ($lineItemData->get('width') * 10),
+                        length: (int) ($lineItemData->get('height') * 10),
+                        depth: (int) ($lineItemData->get('depth') * 10),
+                        weight: (int) ($lineItemData->get('weight') * 1000),
+                        allowedRotation: Rotation::BestFit,
+                    ));
+                } else {
+                    $packer->addItem(new ShipItem(
+                        description: $item->product,
+                        width: (int) ($lineItemData->get('width') * 25.4),
+                        length: (int) ($lineItemData->get('height') * 25.4),
+                        depth: (int) ($lineItemData->get('depth') * 25.4),
+                        weight: (int) ($lineItemData->get('weight') * 453.59237),
+                        allowedRotation: Rotation::BestFit,
+                    ));
+                }
             }
 
         });
