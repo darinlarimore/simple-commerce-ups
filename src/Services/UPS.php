@@ -31,8 +31,6 @@ class UPS
         } else {
             $payload = $this->generatePayload($order);
 
-            ray($payload)->showApp();
-
             if (!$payload) {
                 return false;
             }
@@ -336,32 +334,33 @@ class UPS
 
         $order->lineItems->map(function ($item) use ($packer) {
             $lineItemData = \Statamic\Facades\Entry::find($item->product);
+            $packageDimensions = (object) $lineItemData->get('package_dimensions');
 
             for ($i = 0; $i < $item->quantity; $i++) {
-                if ($lineItemData->get('weight') == null && $lineItemData->get('width') == null && $lineItemData->get('height') == null && $lineItemData->get('depth') == null) {
+                if ($packageDimensions->weight == null && $packageDimensions->width == null && $packageDimensions->height == null && $packageDimensions->length == null) {
                     continue;
                 }
 
-                if ($lineItemData->get('product_type')  == 'digital') {
+                if ($lineItemData->get('product_type')  === 'digital') {
                     continue;
                 }
 
                 if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
                     $packer->addItem(new ShipItem(
                         description: $item->product,
-                        width: (int) ($lineItemData->get('width') * 10),
-                        length: (int) ($lineItemData->get('height') * 10),
-                        depth: (int) ($lineItemData->get('depth') * 10),
-                        weight: (int) ($lineItemData->get('weight') * 1000),
+                        width: (int) ($packageDimensions->width * 10),
+                        length: (int) ($packageDimensions->height * 10),
+                        depth: (int) ($packageDimensions->length * 10),
+                        weight: (int) ($packageDimensions->weight * 1000),
                         allowedRotation: Rotation::BestFit,
                     ));
                 } else {
                     $packer->addItem(new ShipItem(
                         description: $item->product,
-                        width: (int) ($lineItemData->get('width') * 25.4),
-                        length: (int) ($lineItemData->get('height') * 25.4),
-                        depth: (int) ($lineItemData->get('depth') * 25.4),
-                        weight: (int) ($lineItemData->get('weight') * 453.59237),
+                        width: (int) ($packageDimensions->width * 25.4),
+                        length: (int) ($packageDimensions->height * 25.4),
+                        depth: (int) ($packageDimensions->length * 25.4),
+                        weight: (int) ($packageDimensions->weight * 453.59237),
                         allowedRotation: Rotation::BestFit,
                     ));
                 }
