@@ -50,6 +50,10 @@ class UPS
             return $rate->Service->Code == array_search($service, $this->serviceList);
         });
 
+        if (!$shippingRates) {
+            return false;
+        }
+
         return $shippingRates->TotalCharges->MonetaryValue * 100;
     }
 
@@ -305,7 +309,8 @@ class UPS
         });
 
         $order->lineItems->map(function ($item) use ($packer) {
-            $lineItemData = $item->product->data;
+            $lineItemData = \Statamic\Facades\Entry::find($item->product);
+
             for ($i = 0; $i < $item->quantity; $i++) {
                 if ($lineItemData->get('weight') == null && $lineItemData->get('width') == null && $lineItemData->get('height') == null && $lineItemData->get('depth') == null) {
                     continue;
@@ -316,7 +321,7 @@ class UPS
                 }
 
                 $packer->addItem(new ShipItem(
-                    description: $item->product->id,
+                    description: $item->product,
                     width: (int) $lineItemData->get('width'),
                     length: (int) $lineItemData->get('height'),
                     depth: (int) $lineItemData->get('depth'),
