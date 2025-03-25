@@ -24,6 +24,11 @@ Then, you'll need to publish the config file:
 php please vendor:publish --tag=simple-commerce-ups-config
 ```
 
+Then crete the UPS shipping method, name the Shipping method 'UpsGround' for now.
+``` bash
+php please make:ups-shipping-method
+```
+
 ## Setup Instructions
 
 ### API Credentials
