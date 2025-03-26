@@ -11,7 +11,8 @@ class BoxController
     {
         $ups = new UPS();
         return view('simple-commerce-ups::boxes.index', [
-            'boxes' => $ups->getBoxes()
+            'boxes' => $ups->getBoxes(),
+            'isMetric' => config('simple-commerce-ups.unitOfMeasurement') === 'metric'
         ]);
     }
 

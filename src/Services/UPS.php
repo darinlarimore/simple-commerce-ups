@@ -282,17 +282,32 @@ class UPS
 
         // Set the box sizes including custom boxes
         $this->getBoxes()->map(function ($box) use ($packer) {
-            $packer->addBox(new ShipBox(
-                reference: $box['name'],
-                outerWidth: $box['boxWidth'],
-                outerLength: $box['boxLength'],
-                outerDepth: $box['boxHeight'],
-                emptyWeight: 0,
-                innerWidth: $box['boxWidth'],
-                innerLength: $box['boxLength'],
-                innerDepth: $box['boxHeight'],
-                maxWeight: $box['maxWeight'],
-            ));
+            if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
+                $packer->addBox(new ShipBox(
+                    reference: $box['name'],
+                    outerWidth: (int) ($box['boxWidth'] * 10),
+                    outerLength: (int) ($box['boxLength'] * 10),
+                    outerDepth: (int) ($box['boxHeight'] * 10),
+                    emptyWeight: (int) ($box['boxWeight'] * 1000),
+                    innerWidth: (int) ($box['boxWidth'] * 10),
+                    innerLength: (int) ($box['boxLength'] * 10),
+                    innerDepth: (int) ($box['boxHeight'] * 10),
+                    maxWeight: (int) ($box['maxWeight'] * 1000),
+                ));
+            } else {
+                $packer->addBox(new ShipBox(
+                    reference: $box['name'],
+                    outerWidth: (int) ($box['boxWidth'] * 25.4),
+                    outerLength: (int) ($box['boxLength'] * 25.4),
+                    outerDepth: (int) ($box['boxHeight'] * 25.4),
+                    emptyWeight: (int) ($box['boxWeight'] * 453.59237),
+                    innerWidth: (int) ($box['boxWidth'] * 25.4),
+                    innerLength: (int) ($box['boxLength'] * 25.4),
+                    innerDepth: (int) ($box['boxHeight'] * 25.4),
+                    maxWeight: (int) ($box['maxWeight'] * 453.59237)
+                ));
+            }
+
         });
 
         $order->lineItems->map(function ($item) use ($packer) {

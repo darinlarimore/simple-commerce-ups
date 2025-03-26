@@ -28,11 +28,11 @@
 					@forelse($boxes as $box)
 					<tr>
 						<td class="u-pl-2">{{ $box['name'] }}</td>
-						<td>{{ $box['boxLength'] }}mm</td>
-						<td>{{ $box['boxWidth'] }}mm</td>
-						<td>{{ $box['boxHeight'] }}mm</td>
-						<td>{{ $box['boxWeight'] }}g</td>
-						<td class="u-pr-2">{{ $box['maxWeight'] }}g</td>
+						<td>{{ $box['boxLength'] }}{{ $isMetric ? 'mm' : 'in' }}</td>
+						<td>{{ $box['boxWidth'] }}{{ $isMetric ? 'mm' : 'in' }}</td>
+						<td>{{ $box['boxHeight'] }}{{ $isMetric ? 'mm' : 'in' }}</td>
+						<td>{{ $box['boxWeight'] }}{{ $isMetric ? 'g' : 'lbs' }}</td>
+						<td class="u-pr-2">{{ $box['maxWeight'] }}{{ $isMetric ? 'g' : 'lbs' }}</td>
 						<td class="u-pr-2">
 							<form method="POST" action="{{ route('statamic.cp.boxes.destroy', $box['id']) }}" onsubmit="return confirm('Are you sure you want to delete this box?');" class="inline">
 								@csrf
@@ -61,23 +61,23 @@
 							<input type="text" name="name" class="input-text" required>
 						</div>
 						<div class="u-mb-3">
-							<label class="u-font-bold u-text-gray-800">Length (mm)</label>
+							<label class="u-font-bold u-text-gray-800">Length ({{ $isMetric ? 'mm' : 'in' }})</label>
 							<input type="number" name="boxLength" class="input-text" required>
 						</div>
 						<div class="u-mb-3">
-							<label class="u-font-bold u-text-gray-800">Width (mm)</label>
+							<label class="u-font-bold u-text-gray-800">Width ({{ $isMetric ? 'mm' : 'in' }})</label>
 							<input type="number" name="boxWidth" class="input-text" required>
 						</div>
 						<div class="u-mb-3">
-							<label class="u-font-bold u-text-gray-800">Height (mm)</label>
+							<label class="u-font-bold u-text-gray-800">Height ({{ $isMetric ? 'mm' : 'in' }})</label>
 							<input type="number" name="boxHeight" class="input-text" required>
 						</div>
 						<div class="u-mb-3">
-							<label class="u-font-bold u-text-gray-800">Box Weight (g)</label>
+							<label class="u-font-bold u-text-gray-800">Box Weight ({{ $isMetric ? 'g' : 'lbs' }})</label>
 							<input type="number" name="boxWeight" class="input-text" required>
 						</div>
 						<div class="u-mb-3">
-							<label class="u-font-bold u-text-gray-800">Max Weight (g)</label>
+							<label class="u-font-bold u-text-gray-800">Max Weight ({{ $isMetric ? 'g' : 'lbs' }})</label>
 							<input type="number" name="maxWeight" class="input-text" required>
 						</div>
 					</div>
