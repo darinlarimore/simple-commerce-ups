@@ -279,9 +279,46 @@ class UPS
     public function packOrder($order)
     {
         $packer = new Packer();
+        $packedBoxes = collect();
 
         // Set the box sizes including custom boxes
-        $this->getBoxes()->map(function ($box) use ($packer) {
+        $boxes = $this->getBoxes();
+
+        $order->lineItems->map(function ($item) use ($packer, $boxes, &$packedBoxes) {
+            $lineItemData = \Statamic\Facades\Entry::find($item->product);
+            $packageDimensions = (object) $lineItemData->get('package_dimensions');
+
+            // Skip if no dimensions or digital product
+            if (($packageDimensions->weight == null && $packageDimensions->width == null && $packageDimensions->height == null && $packageDimensions->length == null) ||
+                $lineItemData->get('product_type') === 'digital') {
+                return;
+            }
+
+            // If item needs to be packaged separately, create individual boxes
+            if ($packageDimensions->package_separately) {
+                for ($i = 0; $i < $item->quantity; $i++) {
+                    $individualPacker = new Packer();
+                    $this->addBoxesToPacker($individualPacker, $boxes);
+                    $this->addItemToPacker($individualPacker, $item, $packageDimensions, 1);
+                    $packedBoxes = $packedBoxes->merge($individualPacker->pack());
+                }
+            } else {
+                $this->addItemToPacker($packer, $item, $packageDimensions, $item->quantity);
+            }
+        });
+
+        // Add boxes to main packer if we're using it
+        if ($boxes->count() > 0) {
+            $this->addBoxesToPacker($packer, $boxes);
+            $packedBoxes = $packedBoxes->merge($packer->pack());
+        }
+
+        return $packedBoxes;
+    }
+
+    protected function addBoxesToPacker($packer, $boxes)
+    {
+        $boxes->map(function ($box) use ($packer) {
             if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
                 $packer->addBox(new ShipBox(
                     reference: $box['name'],
@@ -307,49 +344,30 @@ class UPS
                     maxWeight: (int) ($box['maxWeight'] * 453.59237)
                 ));
             }
-
         });
+    }
 
-        $order->lineItems->map(function ($item) use ($packer) {
-            $lineItemData = \Statamic\Facades\Entry::find($item->product);
-            $packageDimensions = (object) $lineItemData->get('package_dimensions');
-
-            for ($i = 0; $i < $item->quantity; $i++) {
-                if ($packageDimensions->weight == null && $packageDimensions->width == null && $packageDimensions->height == null && $packageDimensions->length == null) {
-                    continue;
-                }
-
-                if ($lineItemData->get('product_type')  === 'digital') {
-                    continue;
-                }
-
-                if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
-                    $packer->addItem(new ShipItem(
-                        description: $item->product,
-                        width: (int) ($packageDimensions->width * 10),
-                        length: (int) ($packageDimensions->height * 10),
-                        depth: (int) ($packageDimensions->length * 10),
-                        weight: (int) ($packageDimensions->weight * 1000),
-                        allowedRotation: Rotation::BestFit,
-                    ));
-                } else {
-                    $packer->addItem(new ShipItem(
-                        description: $item->product,
-                        width: (int) ($packageDimensions->width * 25.4),
-                        length: (int) ($packageDimensions->height * 25.4),
-                        depth: (int) ($packageDimensions->length * 25.4),
-                        weight: (int) ($packageDimensions->weight * 453.59237),
-                        allowedRotation: Rotation::BestFit,
-                    ));
-                }
-            }
-
-        });
-
-        $packedBoxes = $packer->pack();
-
-        return $packedBoxes;
-
+    protected function addItemToPacker($packer, $item, $packageDimensions, $quantity)
+    {
+        if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
+            $packer->addItem(new ShipItem(
+                description: $item->product,
+                width: (int) ($packageDimensions->width * 10),
+                length: (int) ($packageDimensions->height * 10),
+                depth: (int) ($packageDimensions->length * 10),
+                weight: (int) ($packageDimensions->weight * 1000),
+                allowedRotation: Rotation::BestFit,
+            ), $quantity);
+        } else {
+            $packer->addItem(new ShipItem(
+                description: $item->product,
+                width: (int) ($packageDimensions->width * 25.4),
+                length: (int) ($packageDimensions->height * 25.4),
+                depth: (int) ($packageDimensions->length * 25.4),
+                weight: (int) ($packageDimensions->weight * 453.59237),
+                allowedRotation: Rotation::BestFit,
+            ), $quantity);
+        }
     }
 }
 
