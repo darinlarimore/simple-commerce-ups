@@ -1,0 +1,59 @@
+---
+title: UPS Boxes
+boxes:
+  - id: ups-1
+    name: UPS Letter
+    boxLength: 318
+    boxWidth: 241
+    boxHeight: 6
+    boxWeight: 0
+    maxWeight: 227
+    enabled: true
+  - id: ups-2
+    name: Tube
+    boxLength: 965
+    boxWidth: 152
+    boxHeight: 152
+    boxWeight: 0
+    maxWeight: 45359
+  - id: ups-3
+    name: 10KG Box
+    boxLength: 419
+    boxWidth: 337
+    boxHeight: 273
+    boxWeight: 0
+    maxWeight: 9979
+    enabled: true
+  - id: ups-4
+    name: 25KG Box
+    boxLength: 502
+    boxWidth: 451
+    boxHeight: 335
+    boxWeight: 0
+    maxWeight: 24948
+    enabled: true
+  - id: ups-5
+    name: Small Express Box
+    boxLength: 330
+    boxWidth: 279
+    boxHeight: 51
+    boxWeight: 0
+    maxWeight: 45359
+    enabled: true
+  - id: ups-6
+    name: Medium Express Box
+    boxLength: 406
+    boxWidth: 279
+    boxHeight: 76
+    boxWeight: 0
+    maxWeight: 45359
+    enabled: true
+  - id: ups-7
+    name: Large Express Box
+    boxLength: 457
+    boxWidth: 330
+    boxHeight: 76
+    boxWeight: 0
+    maxWeight: 13608
+    enabled: true
+---

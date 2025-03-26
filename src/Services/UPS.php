@@ -8,9 +8,14 @@ use Darinlarimore\SimpleCommerceUps\Services\ShipBox;
 use DVDoug\BoxPacker\Rotation;
 use Statamic\Facades\Blink;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+use Statamic\Facades\YAML;
+use Statamic\Facades\File;
 
 class UPS
 {
+    protected $boxesPath = 'content/boxes.yaml';
+
     public function checkAvailability($order, $service)
     {
         if ($this->fetchShippingRates($order,  $service) === false) {
@@ -117,7 +122,6 @@ class UPS
             return false;
         }
 
-
         foreach ($boxes as $box) {
             if (config('simple-commerce-ups.unitOfMeasurement') === 'metric') {
                 $dimensionsUnit = "CM";
@@ -211,79 +215,6 @@ class UPS
         return json_decode($response->getBody());
     }
 
-    public array $boxSizes = [
-        [
-            'id' => 'ups-1',
-            'name' => 'UPS Letter',
-            'boxLength' => 318,
-            'boxWidth' => 241,
-            'boxHeight' => 6,
-            'boxWeight' => 0,
-            'maxWeight' => 227,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-2',
-            'name' => 'Tube',
-            'boxLength' => 965,
-            'boxWidth' => 152,
-            'boxHeight' => 152,
-            'boxWeight' => 0,
-            'maxWeight' => 45359,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-3',
-            'name' => '10KG Box',
-            'boxLength' => 419,
-            'boxWidth' => 337,
-            'boxHeight' => 273,
-            'boxWeight' => 0,
-            'maxWeight' => 9979,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-4',
-            'name' => '25KG Box',
-            'boxLength' => 502,
-            'boxWidth' => 451,
-            'boxHeight' => 335,
-            'boxWeight' => 0,
-            'maxWeight' => 24948,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-5',
-            'name' => 'Small Express Box',
-            'boxLength' => 330,
-            'boxWidth' => 279,
-            'boxHeight' => 51,
-            'boxWeight' => 0,
-            'maxWeight' => 45359,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-6',
-            'name' => 'Medium Express Box',
-            'boxLength' => 406,
-            'boxWidth' => 279,
-            'boxHeight' => 76,
-            'boxWeight' => 0,
-            'maxWeight' => 45359,
-            'enabled' => true,
-        ],
-        [
-            'id' => 'ups-7',
-            'name' => 'Large Express Box',
-            'boxLength' => 457,
-            'boxWidth' => 330,
-            'boxHeight' => 76,
-            'boxWeight' => 0,
-            'maxWeight' => 13608,
-            'enabled' => true,
-        ],
-    ];
-
     public array $pickupCodes = [
         'Daily Pickup' => '01',
         'Customer Counter' => '03',
@@ -313,12 +244,44 @@ class UPS
         '86'    => 'UPS Today Express Saver'
     ];
 
+    public function getBoxes()
+    {
+        if (!File::exists($this->boxesPath)) {
+            return collect();
+        }
+
+        $content = YAML::parse(File::get($this->boxesPath));
+        return collect($content['boxes'] ?? []);
+    }
+
+    public function addCustomBox($boxData)
+    {
+        $boxes = $this->getBoxes();
+        $boxData['id'] = 'custom-' . Str::slug($boxData['name']);
+        $boxData['enabled'] = true;
+        $boxes->push($boxData);
+
+        $content = ['boxes' => $boxes->toArray()];
+        File::put($this->boxesPath, YAML::dump($content));
+    }
+
+    public function deleteBox($id)
+    {
+        $boxes = $this->getBoxes();
+        $boxes = $boxes->reject(function ($box) use ($id) {
+            return $box['id'] === $id;
+        });
+
+        $content = ['boxes' => $boxes->toArray()];
+        File::put($this->boxesPath, YAML::dump($content));
+    }
+
     public function packOrder($order)
     {
         $packer = new Packer();
 
-        // Set the box sizes
-        collect($this->boxSizes)->map(function ($box) use ($packer) {
+        // Set the box sizes including custom boxes
+        $this->getBoxes()->map(function ($box) use ($packer) {
             $packer->addBox(new ShipBox(
                 reference: $box['name'],
                 outerWidth: $box['boxWidth'],
