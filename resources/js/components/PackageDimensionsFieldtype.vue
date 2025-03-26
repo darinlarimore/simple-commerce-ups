@@ -1,24 +1,5 @@
 <template>
 	<div>
-		<div class="u-grid u-grid-cols-4 u-gap-2">
-			<div class="u-col-span-3">
-				<div class="u-text-xs u-mb-1">Package Type</div>
-				<select-input
-					:options="packageOptions"
-					:value="value.package_type"
-					@input="updatePackageType"
-					:placeholder="'Select Package Type'"
-				/>
-			</div>
-			<div>
-				<div class="u-text-xs u-mb-1">Package Separately?</div>
-				<toggle-input
-					:value="value.package_separately"
-					@input="updatePackageSeparately"
-					:label="'Package Separately'"
-				/>
-			</div>
-		</div>
 
 		<div class="u-grid u-grid-cols-4 u-gap-2 u-mt-4">
 			<div>
@@ -38,6 +19,16 @@
 				<text-input :value="value.length" @input="updateLength" :placeholder="lengthLabel" />
 			</div>
 		</div>
+		<div class="u-flex u-gap-2 u-mt-4">
+			<div>
+				<div class="u-text-xs u-mb-1">Package Separately?</div>
+				<toggle-input
+					:value="value.package_separately"
+					@input="updatePackageSeparately"
+					:label="'Package Separately'"
+				/>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -45,24 +36,6 @@
 <script>
 export default {
 	mixins: [Fieldtype],
-	data() {
-		return {
-			packageOptions: [
-				{ value: '00', label: 'UNKNOWN' },
-				{ value: '01', label: 'UPS Letter' },
-				{ value: '02', label: 'Package' },
-				{ value: '03', label: 'Tube' },
-				{ value: '04', label: 'Pak' },
-				{ value: '21', label: 'Express Box' },
-				{ value: '24', label: '25KG Box' },
-				{ value: '25', label: '10KG Box' },
-				{ value: '30', label: 'Pallet' },
-				{ value: '2a', label: 'Small Express Box' },
-				{ value: '2b', label: 'Medium Express Box' },
-				{ value: '2c', label: 'Large Express Box' }
-			]
-		};
-	},
 	computed: {
 		lengthLabel() {
 			return this.config.metric ? 'Length (cm)' : 'Length (in)';

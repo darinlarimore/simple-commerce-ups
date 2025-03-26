@@ -36,25 +36,36 @@ In order to use the UPS api, you'll need to do the following:
 
 1. Go to UPS and login to your account.
 2. From the Apps section, follow the prompts to create a new app.
-3. Copy the Client ID from UPS and paste in the `clientId` field in the config.
-4. Copy the Client Secret from UPS and paste in the `clientSecret` field in the config.
-6. Copy the Account Number from UPS and paste in the `accountNumber` field in the config.
+3. Copy the Client ID from UPS and paste in your `.env` file:
+```
+UPS_CLIENT_ID=your_client_id_here
+```
 
-### Add Fields to your Products
-<img src="fig1.png"  width="768">
+4. Copy the Client Secret from UPS and paste in your `.env` file:
+```
+UPS_CLIENT_SECRET=your_client_secret_here
+```
 
-In order for the packing algorhythm to work you must add fields for weight, height, width, and depth to your products. They must have the following handles and types:
+5. Copy your Account Number from UPS and paste in your `.env` file:
+```
+UPS_ACCOUNT_NUMBER=your_account_number_here
+```
 
-| Field Name | Field Type * | Field Handle * |
-| ---------- | ---------- | ------------ |
-| Weight (lbs) | Float      | weight       |
-| Height (in) | Float      | height       |
-| Width (in) | Float      | width        |
-| Depth (in) | Float      | depth        |
+The addon will use these environment variables to authenticate with the UPS API.
 
-\* required
+### Add a Package Dimensions Field to your Products
+Each product needs package dimensions and weight for the packing algorithm to work. Add a package dimensions field to your product blueprint.
 
-**Note:** The `unitOfMeasurement` and `weightUnitOfMeasurement` can be set in the config file and field names can be changed accordingly.
+The package dimensions field will automatically create nested fields for:
+- Weight (in lbs or kg)
+- Height (in inches or mm)
+- Width (in inches or mm)
+- Length (in inches or mm)
+- Package Separately (boolean)
+
+These values will be used to calculate optimal box packing and shipping rates.
+
+> Note: Units are determined by your `UPS_UNIT_OF_MEASUREMENT` configuration.
 
 ### Add Shipping Method(s)
 For each shipping service you want to use (eg. UPS Ground or UPS 2nd Day Air), you'll need to create a new shipping method. To do this,
@@ -91,4 +102,71 @@ In the `config/simple-commerce.php` file, add the new shipping method to the shi
 				\App\ShippingMethods\UPSGround::class => [],
 		],
 ],
+```
+
+## Box Management
+
+UPS shipping rates are calculated based on package dimensions and weight. The addon includes a box management interface in the control panel under "Simple Commerce > UPS Boxes".
+
+### Default Boxes
+
+The addon comes with several pre-configured UPS box sizes:
+- UPS Letter (12.5 x 9.5 x 0.25 in)
+- Tube (38 x 6 x 6 in)
+- 10KG Box (16.5 x 13.25 x 10.75 in)
+- 25KG Box (19.75 x 17.75 x 13.25 in)
+- Small Express Box (13 x 11 x 2 in)
+- Medium Express Box (16 x 11 x 3 in)
+- Large Express Box (18 x 13 x 3 in)
+
+### Custom Boxes
+
+You can add custom box sizes through the control panel. Each box requires:
+- Name
+- Length
+- Width
+- Height
+- Box Weight (empty box weight)
+- Maximum Weight Capacity
+
+All measurements respect your `unitOfMeasurement` configuration (metric or imperial).
+
+### Package Separately Option
+
+Products can be configured to ship in individual boxes by enabling the `package_separately` option in the package dimensions.
+
+When enabled, each item quantity will be packed in its own box instead of attempting to combine multiple items in a single box.
+
+## Configuration
+
+### Unit of Measurement
+
+Set `UPS_UNIT_OF_MEASUREMENT` in your .env file:
+```
+UPS_UNIT_OF_MEASUREMENT=metric    # Use millimeters and grams
+UPS_UNIT_OF_MEASUREMENT=imperial  # Use inches and pounds
+```
+### Test Endpoint
+
+Set `UPS_USE_TEST_ENDPOINT` in your .env file:
+```
+UPS_USE_TEST_ENDPOINT=true   # Use UPS test/sandbox environment
+UPS_USE_TEST_ENDPOINT=false  # Use UPS production environment
+```
+
+### Ship From Address
+
+Set shipping origin address in your .env file:
+```
+UPS_SHIP_FROM_POSTAL_CODE=46202      # Origin postal/zip code
+UPS_SHIP_FROM_COUNTRY_CODE=US        # Origin country code
+UPS_SHIP_FROM_CITY=Indianapolis      # Origin city
+UPS_SHIP_FROM_STATE_CODE=IN          # Origin state/province code
+```
+
+### Pickup Type
+
+Set your UPS pickup type in .env:
+```
+UPS_PICKUP_TYPE="Daily Pickup"  # Options: Daily Pickup, Customer Counter, One Time Pickup, On Call Air, Letter Center, Air Service Center
 ```

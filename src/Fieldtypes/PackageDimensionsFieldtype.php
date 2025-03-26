@@ -25,7 +25,6 @@ class PackageDimensionsFieldtype extends Fieldtype
     public function preProcess($data)
     {
         return $data ?? [
-            'package_type' => null,
             'package_separately' => null,
             'length' => null,
             'width' => null,
