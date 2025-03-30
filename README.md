@@ -34,8 +34,8 @@ php please make:ups-shipping-method
 ### API Credentials
 In order to use the UPS api, you'll need to do the following:
 
-1. Go to UPS and login to your account.
-2. From the Apps section, follow the prompts to create a new app.
+1. Go to the [UPS Developer portal](https://developer.ups.com/) and login to your account.
+2. From the [Apps section](https://developer.ups.com/apps), follow the prompts to create a new app.
 3. Copy the Client ID from UPS and paste in your `.env` file:
 ```
 UPS_CLIENT_ID=your_client_id_here
