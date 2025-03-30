@@ -36,17 +36,26 @@ In order to use the UPS api, you'll need to do the following:
 
 1. Go to the [UPS Developer portal](https://developer.ups.com/) and login to your account.
 2. From the [Apps section](https://developer.ups.com/apps), follow the prompts to create a new app.
-3. Copy the Client ID from UPS and paste in your `.env` file:
+3. Select "I want to integrate UPS technology into my business" and select or create an account to associate.
+<img width="1494" alt="Screenshot 2025-03-29 at 9 20 20 PM" src="https://github.com/user-attachments/assets/395d5d6c-677c-44f9-bab0-50da15386d4e" />
+4. Add your contact information <img width="756" alt="Screenshot 2025-03-29 at 9 20 51 PM" src="https://github.com/user-attachments/assets/a5131f05-4391-4ba6-85e8-c0f2d1f597f9" />
+5. In the next view leave callback URL blank and select the "Ratings" and "Authorization (OAuth)" APIs <img width="1015" alt="Screenshot 2025-03-29 at 9 30 00 PM" src="https://github.com/user-attachments/assets/18691a50-1dc9-497a-a600-19986be67348" />
+<img width="333" alt="Screenshot 2025-03-29 at 9 22 41 PM" src="https://github.com/user-attachments/assets/2363015e-9cb8-46af-91cb-f88e3228cd82" />
+<img width="334" alt="Screenshot 2025-03-29 at 9 22 30 PM" src="https://github.com/user-attachments/assets/4a5f2551-9c69-4080-82eb-1c9d5877210e" />
+
+6. This next view should have your api credentials! <img width="1119" alt="Screenshot 2025-03-29 at 9 24 21 PM" src="https://github.com/user-attachments/assets/452f4054-8885-4ab5-ae32-f1b0024aa945" />
+
+8. Copy the Client ID from UPS and paste in your `.env` file:
 ```
 UPS_CLIENT_ID=your_client_id_here
 ```
 
-4. Copy the Client Secret from UPS and paste in your `.env` file:
+9. Copy the Client Secret from UPS and paste in your `.env` file:
 ```
 UPS_CLIENT_SECRET=your_client_secret_here
 ```
 
-5. Copy your Account Number from UPS and paste in your `.env` file:
+10. Copy your Account Number from UPS and paste in your `.env` file:
 ```
 UPS_ACCOUNT_NUMBER=your_account_number_here
 ```
