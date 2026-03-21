@@ -56,7 +56,7 @@ class ServiceProvider extends AddonServiceProvider
 
         Route::group([
             'prefix' => config('statamic.cp.route', 'cp'),
-            'middleware' => ['web', 'statamic.cp'],
+            'middleware' => ['web', 'statamic.cp', 'statamic.cp.authenticated'],
             'as' => 'statamic.cp.',
         ], function () {
             Route::prefix('boxes')->group(function () {
