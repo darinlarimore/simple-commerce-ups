@@ -207,7 +207,8 @@ class UPS
         try {
             $response = $this->getClient()->request($method, ltrim($uri, '/'), $options);
         } catch (\Exception $e) {
-            $errorResponse = json_decode($e->getResponse()->getBody()->getContents(), true);
+            $errorBody = method_exists($e, 'getResponse') && $e->getResponse() ? $e->getResponse()->getBody()->getContents() : null;
+            $errorResponse = $errorBody ? json_decode($errorBody, true) : null;
             $errorMessage = $errorResponse['response']['errors'][0]['message'] ?? $e->getMessage();
             throw ValidationException::withMessages([$errorMessage]);
         }
