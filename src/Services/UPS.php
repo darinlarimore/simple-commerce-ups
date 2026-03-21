@@ -63,6 +63,43 @@ class UPS
         return $shippingRates->TotalCharges->MonetaryValue * 100;
     }
 
+    public function fetchCheapestRate($order)
+    {
+        if ($order->lineItems->count() == 0) {
+            return false;
+        }
+
+        if (Blink::has($this->cacheKey($order))) {
+            $response = Blink::get($this->cacheKey($order));
+        } else {
+            $payload = $this->generatePayload($order);
+
+            if (!$payload) {
+                return false;
+            }
+
+            $response = $this->request('POST', 'api/rating/v1/Shop', [
+                'json' => $payload,
+            ])->RateResponse->RatedShipment;
+
+            Blink::put($this->cacheKey($order), $response);
+        }
+
+        if ($response === null) {
+            return false;
+        }
+
+        $cheapest = collect($response)
+            ->sortBy(fn ($rate) => (float) $rate->TotalCharges->MonetaryValue)
+            ->first();
+
+        if (!$cheapest) {
+            return false;
+        }
+
+        return $cheapest->TotalCharges->MonetaryValue * 100;
+    }
+
     public function generatePayload($order)
     {
         $payload = [
