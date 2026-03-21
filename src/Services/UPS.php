@@ -88,12 +88,14 @@ class UPS
                         ],
                     ],
                     'ShipTo' => [
-                        'Address' => [
+                        'Address' => array_filter([
                             'City' => (string) $order->shippingAddress()->city(),
-                            'StateProvinceCode' => (string) $order->shippingAddress()->region()['name'],
+                            'StateProvinceCode' => $order->shippingAddress()->region()
+                                ? (string) $order->shippingAddress()->region()['name']
+                                : null,
                             'PostalCode' => (string) $order->shippingAddress()->zipCode(),
                             'CountryCode' => (string) $order->shippingAddress()->country()['iso'],
-                        ],
+                        ]),
                     ],
                 ],
             ],
