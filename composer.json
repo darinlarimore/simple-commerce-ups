@@ -11,12 +11,12 @@
         }
     },
     "require": {
-        "statamic/cms": "^5.0",
+        "statamic/cms": "^6.0",
         "dvdoug/boxpacker": "^4.0",
-        "duncanmcclean/simple-commerce": "^7.5"
+        "duncanmcclean/simple-commerce": "^8.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.5",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
         "pestphp/pest": "^3.2",
         "pestphp/pest-plugin-laravel": "^3.0"
     },
