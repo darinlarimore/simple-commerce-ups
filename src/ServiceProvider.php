@@ -42,9 +42,8 @@ class ServiceProvider extends AddonServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'simple-commerce-ups');
 
-         // Copy example boxes file if it doesn't exist
-        if (!File::exists(base_path('content/boxes.yaml'))) {
-            File::copy(__DIR__ . '/../content/boxes.yaml', base_path('content/boxes.yaml'));
+        if (File::isDirectory(base_path('content')) && ! File::exists(base_path('content/boxes.yaml'))) {
+            File::copy(__DIR__.'/../content/boxes.yaml', base_path('content/boxes.yaml'));
         }
 
         Nav::extend(function ($nav) {

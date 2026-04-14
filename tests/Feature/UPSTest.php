@@ -4,8 +4,7 @@ use Darinlarimore\SimpleCommerceUps\Services\UPS;
 
 test('Test Package Sizes', function () {
     $ups = new UPS();
-    // check that box sizes are returned
-    $this->assertIsArray($ups->boxSizes);
+    expect($ups->getBoxes())->toBeInstanceOf(\Illuminate\Support\Collection::class);
 });
 
 test('Test pickup code array', function () {
