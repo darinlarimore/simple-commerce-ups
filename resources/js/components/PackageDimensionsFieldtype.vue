@@ -4,28 +4,27 @@
 		<div class="u-grid u-grid-cols-4 u-gap-2 u-mt-4">
 			<div>
 				<div class="u-text-xs u-mb-1">{{ weightLabel }}</div>
-				<text-input :value="value.weight" @input="updateWeight" :placeholder="weightLabel" />
+				<ui-input :model-value="value.weight" @update:model-value="updateWeight" :placeholder="weightLabel" />
 			</div>
 			<div>
 				<div class="u-text-xs u-mb-1">{{ heightLabel }}</div>
-				<text-input :value="value.height" @input="updateHeight" :placeholder="heightLabel" />
+				<ui-input :model-value="value.height" @update:model-value="updateHeight" :placeholder="heightLabel" />
 			</div>
 			<div>
 				<div class="u-text-xs u-mb-1">{{ widthLabel }}</div>
-				<text-input :value="value.width" @input="updateWidth" :placeholder="widthLabel" />
+				<ui-input :model-value="value.width" @update:model-value="updateWidth" :placeholder="widthLabel" />
 			</div>
 			<div>
 				<div class="u-text-xs u-mb-1">{{ lengthLabel }}</div>
-				<text-input :value="value.length" @input="updateLength" :placeholder="lengthLabel" />
+				<ui-input :model-value="value.length" @update:model-value="updateLength" :placeholder="lengthLabel" />
 			</div>
 		</div>
 		<div class="u-flex u-gap-2 u-mt-4">
 			<div>
 				<div class="u-text-xs u-mb-1">Package Separately?</div>
-				<toggle-input
-					:value="value.package_separately"
-					@input="updatePackageSeparately"
-					:label="'Package Separately'"
+				<ui-switch
+					:model-value="Boolean(value.package_separately)"
+					@update:model-value="updatePackageSeparately"
 				/>
 			</div>
 		</div>
