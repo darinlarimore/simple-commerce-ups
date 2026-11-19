@@ -1,5 +1,6 @@
 {
     "name": "darinlarimore/simple-commerce-ups",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Darinlarimore\\SimpleCommerceUps\\": "src"
